@@ -3,4 +3,10 @@
   <component name="MavenRunner">
     <option name="jreName" value="temurin-17 (2)" />
   </component>
+  <component name="ProjectRootManager">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="jpab" />
+  </component>
 </project>
