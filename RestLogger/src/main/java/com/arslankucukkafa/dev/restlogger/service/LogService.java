@@ -15,9 +15,11 @@ public class LogService {
     private final CustomLogAppender customLogAppender;
 
     public LogService() {
-        this.logSink = Sinks.many().multicast().onBackpressureBuffer();
+        // Using replay().all() to buffer all events
+        this.logSink = Sinks.many().replay().all();
         this.customLogAppender = new CustomLogAppender();
         setupLogAppender();
+        System.out.println("LogService initialized");
     }
 
     private void setupLogAppender() {
@@ -25,11 +27,21 @@ public class LogService {
         customLogAppender.setContext(rootLogger.getLoggerContext());
         customLogAppender.start();
         rootLogger.addAppender(customLogAppender);
+        System.out.println("Log appender setup completed");
+    }
+
+    public void emitLog(Log log) {
+        System.out.println("Emitting log: " + log.getMessage());
+        Sinks.EmitResult result = logSink.tryEmitNext(log);
+        if (result.isFailure()) {
+            System.err.println("Failed to emit log: " + result);
+        }
     }
 
     private class CustomLogAppender extends AppenderBase<ILoggingEvent> {
         @Override
         protected void append(ILoggingEvent event) {
+            System.out.println("Appender received event: " + event.getMessage());
             Log log = Log.builder()
                     .timestamp(event.getTimeStamp() != 0 ? 
                              DateTimeFormatter.ISO_LOCAL_TIME.format(java.time.Instant.ofEpochMilli(event.getTimeStamp())
@@ -45,11 +57,20 @@ public class LogService {
                 log.setStackTrace(event.getThrowableProxy().getMessage());
             }
             
-            logSink.tryEmitNext(log);
+            Sinks.EmitResult result = logSink.tryEmitNext(log);
+            if (result.isFailure()) {
+                System.err.println("Failed to emit log in appender: " + result);
+            }
         }
     }
 
     public Flux<Log> getLogStream() {
-        return logSink.asFlux();
+        System.out.println("New client connected to log stream");
+        return logSink.asFlux()
+                .doOnSubscribe(s -> System.out.println("Client subscribed to log stream"))
+                .doOnNext(log -> System.out.println("Sending log to client: " + log.getMessage()))
+                .doOnCancel(() -> System.out.println("Client disconnected from log stream"))
+                .doOnError(error -> System.err.println("Error in log stream: " + error.getMessage()))
+                .doOnComplete(() -> System.out.println("Log stream completed"));
     }
 }
