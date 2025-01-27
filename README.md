@@ -92,3 +92,7 @@ Bu proje MIT Lisansı ile lisanslanmıştır. Daha fazla bilgi için `LICENSE` d
 ---
 
 Bu proje, geliştiricilerin ve sistem yöneticilerinin uygulama loglarını daha kolay ve etkili bir şekilde takip etmelerini sağlamak amacıyla geliştirilmiştir. Umarız bu proje, log yönetimi ve izleme süreçlerinizi daha verimli hale getirir.
+
+![Window](blog/images/window.png)
+
+![Notificaiton](blog/images/notification.png)
